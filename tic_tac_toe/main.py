@@ -1,11 +1,10 @@
 import pygame
 import sys
-import time
 import random
 from pygame.locals import *
 
 
-# region     Variables, window setup, image work, game state var.
+# region     Global variables, window setup, image work, game state var.
 # Initialize pygame
 pygame.init()
 
