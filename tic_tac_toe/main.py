@@ -1,8 +1,11 @@
 import pygame
 import sys
 import time
+import random
 from pygame.locals import *
 
+
+# region     Variables, window setup, image work, game state var.
 # Initialize pygame
 pygame.init()
 
@@ -10,7 +13,9 @@ pygame.init()
 width = 400
 height = 400
 white = (255, 255, 255)
+black = (0, 0, 0)
 line_color = (10, 10, 10)
+random_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 board = [[None] * 3, [None] * 3, [None] * 3]
 
 # Window setup
@@ -34,9 +39,9 @@ draw = False
 winner = None
 CLOCK = pygame.time.Clock()
 fps = 30
+# endregion
 
 
-# Draw grid lines
 def draw_grid():
     screen.fill(white)
     # vertical lines
@@ -49,23 +54,43 @@ def draw_grid():
     )
 
 
-# Display status
 def draw_status():
-    font = pygame.font.Font(None, 30)
     if winner:
         message = f"{winner} won!"
     elif draw:
         message = "Draw game!"
     else:
         message = f"{letter}'s Turn"
-    text = font.render(message, True, (50, 50, 50))
-    screen.fill(white, (0, height, width, 100))
-    text_rect = text.get_rect(center=(width / 2, height + 50))
-    screen.blit(text, text_rect)
+
+    font = pygame.font.Font(None, 30)
+    text = font.render(message, True, black)
+    screen.fill(random_color, (0, height, width, 100))
+
+    if winner or draw:
+        draw_buttons()
+        text_rect = text.get_rect(center=(width / 2, height + 30))
+        screen.blit(text, text_rect)
+    else:
+        text_rect = text.get_rect(center=(width / 2, height + 50))
+        screen.blit(text, text_rect)
+
     pygame.display.update()
 
 
-# Draw X or O
+def draw_buttons():
+    font = pygame.font.Font(None, 28)
+
+    restart_rect = pygame.Rect(60, height + 50, 120, 40)
+    pygame.draw.rect(screen, (35, 153, 67), restart_rect)
+    restart_text = font.render("Restart", True, white)
+    screen.blit(restart_text, (restart_rect.x + 20, restart_rect.y + 8))
+
+    quit_rect = pygame.Rect(220, height + 50, 120, 40)
+    pygame.draw.rect(screen, (153, 35, 35), quit_rect)
+    quit_text = font.render("Quit", True, white)
+    screen.blit(quit_text, (quit_rect.x + 35, quit_rect.y + 8))
+
+
 def draw_letter(row, col):
     global board
     cell_size = width // 3
@@ -83,7 +108,6 @@ def draw_letter(row, col):
     pygame.display.update()
 
 
-# Check for win
 def check_win():
     global winner, draw
 
@@ -119,24 +143,29 @@ def check_win():
 
     if board[0][0] == board[1][1] == board[2][2] and board[0][0] is not None:
         winner = board[0][0]
+        pygame.draw.line(screen, (250, 70, 70), (50, 50), (350, 350), 4)
         return
 
     if board[0][2] == board[1][1] == board[2][0] and board[0][2] is not None:
         winner = board[0][2]
-        pygame.draw.line(screen, (250, 70, 70), (50, 50), (350, 350), 4)
+        pygame.draw.line(screen, (250, 70, 70), (350, 50), (50, 350), 4)
         return
 
     if all([all(row) for row in board]) and winner is None:
-        pygame.draw.line(screen, (250, 70, 70), (350, 50), (50, 350), 4)
         draw = True
 
 
-# Handle clicks
 def user_click():
-    global letter, winner, draw
+    global letter, winner, draw, random_color
 
     x, y = pygame.mouse.get_pos()
-    if y > height:  # Ignore clicks below the grid
+
+    if winner or draw:
+        handle_game_over_click(pygame.mouse.get_pos())
+        return
+
+    # Ignore clicks below the grid
+    if y > height:
         return
 
     col = int(x // (width / 3)) + 1
@@ -146,11 +175,29 @@ def user_click():
         draw_letter(row, col)
         check_win()
         if not winner and not draw:
-            letter = "O" if letter == "X" else "X"
+            if letter == "X":
+                letter = "O"
+            else:
+                letter = "X"
+            random_color = (
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255),
+            )
+
         draw_status()
 
 
-# Restart game
+def handle_game_over_click(pos):
+    x, y = pos
+
+    if 60 <= x <= 180 and height + 50 <= y <= height + 90:
+        reset_game()
+    elif 220 <= x <= 340 and height + 50 <= y <= height + 90:
+        pygame.quit()
+        sys.exit()
+
+
 def reset_game():
     global board, winner, draw, letter
     board = [[None] * 3, [None] * 3, [None] * 3]
@@ -164,6 +211,7 @@ def reset_game():
 # Start game
 draw_grid()
 draw_status()
+
 
 # Game loop
 while True:
