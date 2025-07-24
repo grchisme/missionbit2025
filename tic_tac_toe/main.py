@@ -54,6 +54,8 @@ def draw_grid():
 
 
 def draw_status():
+    global random_color
+
     if winner:
         message = f"{winner} won!"
     elif draw:
@@ -160,7 +162,7 @@ def user_click():
     x, y = pygame.mouse.get_pos()
 
     if winner or draw:
-        handle_game_over_click(pygame.mouse.get_pos())
+        handle_game_over_click()
         return
 
     # Ignore clicks below the grid
@@ -187,8 +189,8 @@ def user_click():
         draw_status()
 
 
-def handle_game_over_click(pos):
-    x, y = pos
+def handle_game_over_click():
+    x, y = pygame.mouse.get_pos()
 
     if 60 <= x <= 180 and height + 50 <= y <= height + 90:
         reset_game()
@@ -213,9 +215,11 @@ draw_status()
 
 
 # Game loop
-while True:
+running = True
+while running:
     for event in pygame.event.get():
         if event.type == QUIT:
+            running = False
             pygame.quit()
             sys.exit()
         elif event.type == MOUSEBUTTONDOWN:
