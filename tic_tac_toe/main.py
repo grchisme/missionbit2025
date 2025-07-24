@@ -3,39 +3,40 @@ import sys
 import time
 from pygame.locals import *
 
-# initialize pygame
+# Initialize pygame
 pygame.init()
 
-# board characteristics
+# Global variables
 width = 400
 height = 400
 white = (255, 255, 255)
-line_color = (0, 0, 0)
+line_color = (10, 10, 10)
 board = [[None] * 3, [None] * 3, [None] * 3]
 
-# builds the display
-pygame.display.set_caption("Tic Tac Toe")
+# Window setup
 screen = pygame.display.set_mode((width, height + 100), 0, 32)
+pygame.display.set_caption("Tic Tac Toe")
 screen.fill(white)
 
-# load and scale images
+# Load and resize images
 x_img = pygame.image.load(
-    r"C:\Users\gchin\OneDrive\Documents\Python_MissionBit\tic_tac_toe\assets\tictactoe_X.jpg"
+    r"C:\Users\gchin\OneDrive\Documents\Python_MissionBit\tic_tac_toe\assets\x_game_image.png"
 )
 x_img = pygame.transform.scale(x_img, (80, 80))
 o_img = pygame.image.load(
-    r"C:\Users\gchin\OneDrive\Documents\Python_MissionBit\tic_tac_toe\assets\tictactoe_O.png"
+    r"C:\Users\gchin\OneDrive\Documents\Python_MissionBit\tic_tac_toe\assets\o_game_image.png"
 )
 o_img = pygame.transform.scale(o_img, (80, 80))
 
-# game state
+# Game state
 letter = "X"
+draw = False
 winner = None
-tie = None
 CLOCK = pygame.time.Clock()
 fps = 30
 
-# draw grid
+
+# Draw grid lines
 def draw_grid():
     screen.fill(white)
     # vertical lines
@@ -43,21 +44,20 @@ def draw_grid():
     pygame.draw.line(screen, line_color, (width / 3 * 2, 0), (width / 3 * 2, height), 7)
     # horizontal lines
     pygame.draw.line(screen, line_color, (0, height / 3), (width, height / 3), 7)
-    pygame.draw.line(screen, line_color, (0, height / 3 * 2), (width, height / 3 * 2), 7)
+    pygame.draw.line(
+        screen, line_color, (0, height / 3 * 2), (width, height / 3 * 2), 7
+    )
 
 
-
-# display status
-def tie_status():
+# Display status
+def draw_status():
     font = pygame.font.Font(None, 30)
-    # endgame messages
-    if winner is None:
-        message = f"{letter}'s Turn"
-    else:
+    if winner:
         message = f"{winner} won!"
-    if tie:
+    elif draw:
         message = "Draw game!"
-    # text display area
+    else:
+        message = f"{letter}'s Turn"
     text = font.render(message, True, (50, 50, 50))
     screen.fill(white, (0, height, width, 100))
     text_rect = text.get_rect(center=(width / 2, height + 50))
@@ -65,7 +65,7 @@ def tie_status():
     pygame.display.update()
 
 
-# draw letter
+# Draw X or O
 def draw_letter(row, col):
     global board
     cell_size = width // 3
@@ -73,23 +73,25 @@ def draw_letter(row, col):
     posx = (col - 1) * cell_size + offset
     posy = (row - 1) * cell_size + offset
 
-    if letter == 'X':
+    if letter == "X":
         screen.blit(x_img, (posx, posy))
-        board[row - 1][col - 1] = 'X'
+        board[row - 1][col - 1] = "X"
     else:
         screen.blit(o_img, (posx, posy))
-        board[row - 1][col - 1] = 'O'
+        board[row - 1][col - 1] = "O"
 
     pygame.display.update()
 
-# check for win
-# displays line that shows win scenario
-def check_win():
-    global winner, tie
 
-    # horizontal check
+# Check for win
+def check_win():
+    global winner, draw
+
     for row in range(3):
-        if board[row][0] == board[row][1] == board[row][2] and board[row][0] is not None:
+        if (
+            board[row][0] == board[row][1] == board[row][2]
+            and board[row][0] is not None
+        ):
             winner = board[row][0]
             pygame.draw.line(
                 screen,
@@ -98,12 +100,13 @@ def check_win():
                 (width, (row + 1) * height / 3 - height / 6),
                 4,
             )
-            time.sleep(1)
             return
 
-    # column check
     for col in range(3):
-        if board[0][col] == board[1][col] == board[2][col] and board[0][col] is not None:
+        if (
+            board[0][col] == board[1][col] == board[2][col]
+            and board[0][col] is not None
+        ):
             winner = board[0][col]
             pygame.draw.line(
                 screen,
@@ -112,30 +115,25 @@ def check_win():
                 ((col + 1) * width / 3 - width / 6, height),
                 4,
             )
-            time.sleep(1)
             return
 
-    # diagnol checks
     if board[0][0] == board[1][1] == board[2][2] and board[0][0] is not None:
         winner = board[0][0]
-        pygame.draw.line(screen, (250, 70, 70), (50, 50), (350, 350), 4)
-        return 
+        return
 
     if board[0][2] == board[1][1] == board[2][0] and board[0][2] is not None:
         winner = board[0][2]
+        pygame.draw.line(screen, (250, 70, 70), (50, 50), (350, 350), 4)
+        return
+
+    if all([all(row) for row in board]) and winner is None:
         pygame.draw.line(screen, (250, 70, 70), (350, 50), (50, 350), 4)
-        return 
-
-    # check if every cell is filled
-    if all([all(i) for i in board]) and winner is None:
-        # all(i) checks if all items in row are full
-        # all([...]) then checks if all rows are full
-        tie = True
+        draw = True
 
 
-# handle clicks
+# Handle clicks
 def user_click():
-    global letter, winner, tie
+    global letter, winner, draw
 
     x, y = pygame.mouse.get_pos()
     if y > height:  # Ignore clicks below the grid
@@ -147,36 +145,37 @@ def user_click():
     if row <= 3 and col <= 3 and board[row - 1][col - 1] is None:
         draw_letter(row, col)
         check_win()
-        if not winner and not tie:
-            letter = 'O' if letter == 'X' else 'X'
-        tie_status()
+        if not winner and not draw:
+            letter = "O" if letter == "X" else "X"
+        draw_status()
 
 
-# restart
+# Restart game
 def reset_game():
-    global board, winner, letter, tie
+    global board, winner, draw, letter
     board = [[None] * 3, [None] * 3, [None] * 3]
     winner = None
-    tie = False
+    draw = False
     letter = "X"
     draw_grid()
-    tie_status()
+    draw_status()
 
 
-# start game
+# Start game
 draw_grid()
-tie_status()
+draw_status()
 
-# game loop
+# Game loop
 while True:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type is pygame.MOUSEBUTTONDOWN:
+        elif event.type == MOUSEBUTTONDOWN:
             user_click()
-        elif event.type == pygame.KEYDOWN:
-            if event.key == K_r:
+        elif event.type == KEYDOWN:
+            if event.key == pygame.K_r:
                 reset_game()
 
     pygame.display.update()
+    CLOCK.tick(fps)
