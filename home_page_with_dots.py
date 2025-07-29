@@ -10,7 +10,7 @@ width = 1100
 height = 550
 white = (255, 255, 255)
 black = (0, 0, 0)
-background_color = (101, 181, 201) # light blue
+background_color = (101, 181, 201)  # light blue
 random_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 screen = pygame.display.set_mode((width, height), 0, 32)
@@ -24,6 +24,7 @@ button_rect_middle = pygame.Rect(495, 300, 120, 40)
 button_rect_right = pygame.Rect(925, 300, 120, 40)
 
 clock = pygame.time.Clock()
+
 
 def draw_title():
     global title_font, random_color
@@ -78,22 +79,23 @@ def button_click():
         )
         return
 
+
 class Dot:
     def __init__(self):
         self.x = random.uniform(0, width)
         self.y = random.uniform(0, height)
         self.radius = random.randint(2, 6)
-        self.speed = random.uniform(.1, .5)
+        self.speed = random.uniform(0.1, 0.5)
         self.color = (
             random.randint(0, 255),
             random.randint(0, 255),
-            random.randint(0, 255)
+            random.randint(0, 255),
         )
 
         angle = random.uniform(0, 2 * math.pi)
         self.dx = math.cos(angle) * self.speed
         self.dy = math.sin(angle) * self.speed
-    
+
     def update(self):
         self.x += self.dx
         self.y += self.dy
@@ -120,14 +122,14 @@ for i in range(dots_num):
 running = True
 while running:
     screen.fill(white)
-    
+
     for i in range(len(dots)):
         dots[i].update()
         dots[i].draw(screen)
 
+    clock.tick(60)
     draw_title()
     draw_buttons()
-    clock.tick(60)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
