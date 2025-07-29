@@ -120,6 +120,11 @@ for i in range(dots_num):
 running = True
 while running:
     screen.fill(white)
+    
+    for i in range(len(dots)):
+        dots[i].update()
+        dots[i].draw(screen)
+
     draw_title()
     draw_buttons()
     clock.tick(60)
@@ -131,9 +136,5 @@ while running:
             running = False
         elif event.type == MOUSEBUTTONDOWN:
             button_click()
-
-    for i in range(len(dots)):
-        dots[i].update()
-        dots[i].draw(screen)
 
     pygame.display.flip()
