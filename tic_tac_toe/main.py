@@ -4,11 +4,9 @@ import random
 from pygame.locals import *
 
 
-# region     Global variables, window setup, image work, game state var.
-# Initialize pygame
+# region     Initialize pygame, global variables, window setup, image work, game state var.
 pygame.init()
 
-# Global variables
 width = 400
 height = 400
 white = (255, 255, 255)
@@ -17,12 +15,10 @@ line_color = (10, 10, 10)
 random_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 board = [[None] * 3, [None] * 3, [None] * 3]
 
-# Window setup
 screen = pygame.display.set_mode((width, height + 100), 0, 32)
 pygame.display.set_caption("Tic Tac Toe")
 screen.fill(white)
 
-# Load and resize images
 x_img = pygame.image.load(
     r"C:\Users\gchin\OneDrive\Documents\Python_MissionBit\tic_tac_toe\assets\x_game_image.png"
 )
@@ -32,7 +28,6 @@ o_img = pygame.image.load(
 )
 o_img = pygame.transform.scale(o_img, (80, 80))
 
-# Game state
 letter = "X"
 draw = False
 winner = None
